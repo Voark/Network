@@ -6,7 +6,6 @@ Original file is located at
     https://colab.research.google.com/drive/1q1vT3He4ZT_n1usObLpQ2t1FVqOLlMpJ
 """
 
-!pip install mlxtend
 from mlxtend.data import loadlocal_mnist
 #import cupy as cp
 

@@ -1,6 +1,4 @@
 import numpy as cp
-#TODO: Stochastic
-#TODO: Mini-batch
 def list_functions():
     functions = {'batch': batch_gradient_descent, 'stochastic': stochastic_gradient_descent, 'mini batch': mini_batch_gradient_descent}
     return functions

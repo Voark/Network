@@ -1,5 +1,5 @@
 # import cupy as cp
-import numpy as cp
+import numpy as np
 import activation_functions
 import gradient_descent_algorithms
 import error_functions
@@ -21,6 +21,7 @@ class Network:
         self.gradient_descent_algorithm_text = None
         self.gradient_descent_algorithm = None
         self.compiled = 0
+        self.history = []
 
     def set_input(self, input_size):
         if type(input_size) == int:
@@ -84,9 +85,9 @@ class Network:
             # create input layer
             try:
                 self.weights.append(
-                    cp.random.normal(size = (self.hidden_layer_sizes[0], self.input_size))
+                    np.random.normal(size = (self.hidden_layer_sizes[0], self.input_size))
                 )
-                self.biases.append(cp.zeros((self.hidden_layer_sizes[0], 1)))
+                self.biases.append(np.zeros((self.hidden_layer_sizes[0], 1)))
             except:
                 print("Layer sizes and/or input size not defined")
                 self.reset_hidden_layers()
@@ -94,14 +95,14 @@ class Network:
             # create hidden layer
             for i in range(1, len(self.hidden_layer_sizes)):
                 self.weights.append(
-                    cp.random.normal(size = (self.hidden_layer_sizes[i], self.hidden_layer_sizes[i - 1])))
-                self.biases.append(cp.zeros((self.hidden_layer_sizes[i], 1)))
+                    np.random.normal(size = (self.hidden_layer_sizes[i], self.hidden_layer_sizes[i - 1])))
+                self.biases.append(np.zeros((self.hidden_layer_sizes[i], 1)))
             # create output layer
             try:
                 self.weights.append(
-                    cp.random.normal(size = (self.output_size, self.hidden_layer_sizes[-1]))
+                    np.random.normal(size = (self.output_size, self.hidden_layer_sizes[-1]))
                 )
-                self.biases.append(cp.zeros((self.output_size, 1)))
+                self.biases.append(np.zeros((self.output_size, 1)))
             except:
                 print("Outputs not defined")
                 self.reset_hidden_layers()
@@ -114,7 +115,7 @@ class Network:
         z = []
         activations = [x]
         for weights, biases, activation_function, input in zip(self.weights, self.biases, self.activation_functions, activations):
-            temp_z = cp.add(cp.matmul(weights, input), biases)
+            temp_z = np.add(np.matmul(weights, input), biases)
             z.append(temp_z)
             activations.append(activation_function(temp_z))
         return activations, z
@@ -122,10 +123,10 @@ class Network:
     def back_prop(self, activations, z, y_hat):
         weight_gradient = []
         bias_gradient = []
-        delta = cp.multiply(
+        delta = np.multiply(
             self.error_function(activations[-1], y_hat, derivative = True), self.activation_functions[-1](z[-1], derivative = True)
         )
-        weight_gradient.append(cp.matmul(delta, cp.transpose(activations[-2])))
+        weight_gradient.append(np.matmul(delta, np.transpose(activations[-2])))
         bias_gradient.append(delta)
         for a, z_layer, weights, activation_function in zip(
             reversed(activations[:-2]),
@@ -133,9 +134,9 @@ class Network:
             reversed(self.weights[1:]),
             reversed(self.activation_functions[:-1]),
         ):
-            delta = cp.multiply(activation_function(z_layer, derivative = True), cp.matmul(cp.transpose(weights), delta))
+            delta = np.multiply(activation_function(z_layer, derivative = True), np.matmul(np.transpose(weights), delta))
             bias_gradient.append(delta)
-            weight_gradient.append(cp.matmul(delta, cp.transpose(a)))
+            weight_gradient.append(np.matmul(delta, np.transpose(a)))
         return weight_gradient, bias_gradient
     
     def update_weights_and_biases(self, weight_gradient, bias_gradient):
@@ -144,7 +145,6 @@ class Network:
             self.biases[i] += self.alpha * bias_gradient[-(i+1)]
 
     def train(self, train_x, train_y, test_x, test_y, epochs):
-        train_x, train_y, test_x, test_y = train_x.T, train_y.T, test_x.T, test_y.T
         self.gradient_descent_algorithm(self, train_x, train_y, test_x, test_y, epochs)
     
     def test_accuracy(self, test_x, test_y):
@@ -171,8 +171,8 @@ class Network:
                 else:
                     f.write(str(param) + '\n')
         #save weights and biases
-        cp.savez(file_name + "_weights", *self.weights)
-        cp.savez(file_name + "_biases", *self.biases)
+        np.savez(file_name + "_weights", *self.weights)
+        np.savez(file_name + "_biases", *self.biases)
 
     def load_model(self, file_name):
         #write all params to their respective variables
@@ -196,8 +196,8 @@ class Network:
         self.alpha = float(self.alpha[0])
         self.compiled = int(self.compiled[0])
         #load weights and biases
-        weights = cp.load(file_name + '_weights.npz')
-        biases = cp.load(file_name + '_biases.npz')
+        weights = np.load(file_name + '_weights.npz')
+        biases = np.load(file_name + '_biases.npz')
         for weight_layer, bias_layer in zip(weights.values(), biases.values()):
             self.weights.append(weight_layer)
             self.biases.append(bias_layer)

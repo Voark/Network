@@ -105,7 +105,7 @@ print(f'Custom network training time: {custom_network_time:.2f} \nKeras training
     
 
 
-![svg](img/README.ipynb_7_1.svg)
+![svg](/img/README.ipynb_7_1.png)
 
 
 ## 4 Graph data and analyze results

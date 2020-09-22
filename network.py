@@ -1,5 +1,5 @@
 # import cupy as cp
-import numpy as np
+import cupy as np
 import activation_functions
 import gradient_descent_algorithms
 import error_functions
@@ -127,7 +127,7 @@ class Network:
             self.error_function(activations[-1], y_hat, derivative = True), self.activation_functions[-1](z[-1], derivative = True)
         )
         weight_gradient.append(np.matmul(delta, np.transpose(activations[-2])))
-        bias_gradient.append(delta)
+        bias_gradient.append(np.sum(delta, axis = 1, keepdims = True))
         for a, z_layer, weights, activation_function in zip(
             reversed(activations[:-2]),
             reversed(z[:-1]),
@@ -135,7 +135,7 @@ class Network:
             reversed(self.activation_functions[:-1]),
         ):
             delta = np.multiply(activation_function(z_layer, derivative = True), np.matmul(np.transpose(weights), delta))
-            bias_gradient.append(delta)
+            bias_gradient.append(np.sum(delta, axis = 1, keepdims = True))
             weight_gradient.append(np.matmul(delta, np.transpose(a)))
         return weight_gradient, bias_gradient
     
@@ -144,8 +144,9 @@ class Network:
             self.weights[i] += self.alpha * weight_gradient[-(i+1)]
             self.biases[i] += self.alpha * bias_gradient[-(i+1)]
 
-    def train(self, train_x, train_y, test_x, test_y, epochs):
-        self.gradient_descent_algorithm(self, train_x, train_y, test_x, test_y, epochs)
+    def train(self, x_train, y_train, x_test, y_test, epochs):
+        x_train, y_train, x_test, y_test = np.asarray(x_train), np.asarray(y_train), np.asarray(x_test), np.asarray(y_test)
+        self.gradient_descent_algorithm(self, x_train, y_train, x_test, y_test, epochs)
     
     def test_accuracy(self, test_x, test_y):
         correct = 0
